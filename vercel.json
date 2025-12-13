@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run docs:build",
+  "outputDirectory": "docs/.vitepress/dist",
+  "framework": "vitepress",
+  "headers": [
+    {
+      "source": "/schema.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
