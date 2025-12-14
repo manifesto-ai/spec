@@ -16,6 +16,28 @@ Manifesto is a semantic state protocol originally created in 2024 for describing
 
 This is a **Working Draft** of the Manifesto Specification. It may be updated, replaced, or obsoleted at any time.
 
+> ⚠️ **Experimental / Living Document** — The specification is intentionally published early to invite feedback and experimentation. APIs, schemas, and semantics **may change incompatibly** between versions while the model stabilizes.
+
+## Specification Status and Intent
+
+- **Working Draft**: Not a finalized standard; breaking changes are expected during 0.x.
+- **Early by design**: Published now so engineers and researchers can critique, experiment, and keep architecture discussions auditable.
+- **Spec leads implementation**: Implementations may be partial or opinionated; they must respect the conceptual contracts, not necessarily match optimizations.
+- **Versioning**: `0.x` artifacts denote an evolving surface without backward-compatibility guarantees.
+
+### What Manifesto Is / Is Not
+
+**Manifesto IS**
+- A semantic state model for AI-native systems
+- A design framework that formalizes intent → effect → snapshot
+- A shared world model for humans, UIs, and agents
+
+**Manifesto is NOT**
+- A drop-in production framework (yet)
+- A frozen or finalized standard
+- A guarantee of backward compatibility
+- A replacement for all existing state management libraries
+
 ## Copyright Notice
 
 Copyright © 2024-present Manifesto Contributors. This specification is released under the MIT License.

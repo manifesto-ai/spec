@@ -38,7 +38,7 @@ features:
 
 <div class="my-12 p-4 rounded-lg border border-border bg-muted/50">
   <p class="text-sm">
-    <strong>Working Draft</strong> — This is the latest working draft of the Manifesto Specification.
+    <strong>⚠️ Working Draft</strong> — This specification is experimental and evolving. Breaking changes may occur while we incorporate feedback from real implementations.
     <a href="/draft/" class="text-primary hover:underline">Read the spec →</a>
   </p>
 </div>
@@ -75,6 +75,12 @@ const effect = {
 |---------|--------|------|
 | [Working Draft](/draft/) | 🚧 In Progress | — |
 | v0.1 | 📋 Planned | Q1 2025 |
+
+### Stability & Intent
+
+- **Experimental / Living Document**: Published early to invite critique and hands-on experimentation; not a finalized standard.
+- **Spec leads implementation**: Implementations may be partial or opinionated as long as they respect the semantic model.
+- **Versioning**: `0.x` signals active evolution with no compatibility guarantee.
 
 ## Get Involved
 

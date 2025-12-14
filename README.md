@@ -2,6 +2,8 @@
 
 Semantic State Protocol for AI Agents. This repository hosts the VitePress-based specification site deployed to `spec.manifesto-ai.dev`.
 
+> ⚠️ **Working Draft** — The Manifesto Specification is a living, experimental document. APIs, schemas, and semantics **will evolve** and breaking changes **may occur** while we incorporate feedback and real-world learnings.
+
 ## Requirements
 - Node.js 20+
 - npm (ships with Node)
@@ -20,6 +22,24 @@ pnpm run docs:dev
 pnpm run docs:build
 pnpm run docs:preview
 ```
+
+## Specification Status & Intent
+
+- **Working Draft / Experimental**: The specification is intentionally published early to invite experimentation, critique, and co-evolution with implementations. It is **not** a finalized standard and **may change incompatibly**.
+- **Spec leads implementation**: Implementations may be partial or opinionated; the spec defines conceptual contracts, not performance guarantees.
+- **Versioning**: `0.x` artifacts signal ongoing change and lack of backward-compatibility promises.
+
+### What Manifesto Is / Is Not
+
+**Manifesto IS**
+- A semantic state model and design framework for AI-native systems
+- A formalization of intent → effect → snapshot
+- A shared world model for humans, UIs, and agents
+
+**Manifesto is NOT**
+- A drop-in production framework (yet)
+- A frozen standard or compatibility commitment
+- A replacement for every state management library
 
 ## Project Structure
 - `docs/` — VitePress content and theme
