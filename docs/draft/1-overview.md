@@ -160,7 +160,7 @@ A **DomainSnapshot** represents the complete state of a domain at a specific poi
 | `derived` | Computed values | Read-only (auto-computed) |
 | `validity` | Validation results | Read-only (auto-computed) |
 
-See [Section 2 -- Snapshot](./Section%202%20--%20Snapshot.md) for the complete specification.
+See [Section 2 -- Snapshot](./2-snapshot.md) for the complete specification.
 
 ### 1.4.2 SemanticPath
 
@@ -172,7 +172,7 @@ state.form.errors
 derived.analytics.conversionRate
 ```
 
-See [Section 3 -- Semantic Path](./Section%203%20--%20Semantic%20Path.md) for the complete specification.
+See [Section 3 -- Semantic Path](./3-semantic-path.md) for the complete specification.
 
 ### 1.4.3 Expression
 
@@ -196,7 +196,7 @@ An **Expression** is a JSON-serializable structure that computes a value. Expres
 ]
 ```
 
-See [Section 5 -- Expression](./Section%205%20--%20Expression.md) for the complete specification.
+See [Section 5 -- Expression](./5-expression.md) for the complete specification.
 
 ### 1.4.4 Effect
 
@@ -212,7 +212,7 @@ Manifesto defines ten effect types:
 | Control | `SequenceEffect`, `ParallelEffect`, `ConditionalEffect`, `CatchEffect` |
 | Event | `EmitEventEffect` |
 
-See [Section 4 -- Effect](./Section%204%20--%20Effect.md) for the complete specification.
+See [Section 4 -- Effect](./4-effect.md) for the complete specification.
 
 ### 1.4.5 Dependency Graph (DAG)
 
@@ -222,7 +222,7 @@ The runtime builds a **Directed Acyclic Graph** from path dependencies. When val
 2. The order of recomputation (topological sort)
 3. Which async effects should trigger
 
-See [Section 7 -- Execution](./Section%207%20--%20Execution.md) for the complete specification.
+See [Section 7 -- Execution](./7-execution.md) for the complete specification.
 
 ---
 
