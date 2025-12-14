@@ -8,7 +8,7 @@ hero:
   text: Specification
   tagline: Semantic State Protocol for AI Agents
   image:
-    src: /logo.svg
+    src: /logo.png
     alt: Manifesto
   actions:
     - theme: brand
@@ -53,15 +53,19 @@ const snapshot = {
   data: { users: { 'u1': { name: 'Alice' } } },
   state: { ui: { modal: { isOpen: false } } },
   derived: { userCount: 1 },
-  async: { fetchUsers: { status: 'success' } },
-  actions: { 'user:create': { enabled: true } }
+  validity: {
+    'data.users.u1.email': { valid: true, issues: [] }
+  },
+  timestamp: 1702500000000,
+  version: 3
 }
 
 // An Effect Descriptor
 const effect = {
-  type: 'set',
+  _tag: 'SetState',
   path: 'state.ui.modal.isOpen',
-  payload: { value: true }
+  value: true,
+  description: 'Open the modal'
 }
 ```
 

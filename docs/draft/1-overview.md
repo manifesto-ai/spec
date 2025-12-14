@@ -42,61 +42,228 @@ Every value in a Manifesto domain has a **SemanticPath** - a unique, meaningful 
 data.user.email       // User's email address
 state.cart.isOpen     // Whether cart drawer is open
 derived.order.total   // Computed order total
-actions.checkout.run  // Callable checkout action
+actions.checkout      // Checkout action
 ```
 
-### 1.2.2 Single Source of Truth
+This addressing scheme enables AI agents to understand application state without visual interpretation.
 
-The **DomainSnapshot** is the canonical source of application state. All reads and writes MUST be expressed in terms of the snapshot.
+### 1.2.2 Declarative
 
-### 1.2.3 Deterministic Behavior
+Business rules are expressed as **data**, not code. Expressions are JSON-serializable structures that can be:
 
-Given the same snapshot and the same inputs:
+- Statically analyzed for dependencies
+- Optimized before execution
+- Understood by AI agents
 
-- **Expressions** MUST produce the same output
-- **Effects** MUST produce the same resulting snapshot
+**Example № 1** *Declarative expression*
 
-### 1.2.4 Declarative by Default
+```typescript
+// A derived value that computes cart total
+{
+  deps: ['data.cart.items'],
+  expr: ['reduce', ['get', 'data.cart.items'],
+    ['+', ['get', '$acc'], ['*', ['get', '$.price'], ['get', '$.quantity']]],
+    0
+  ]
+}
+```
 
-All state transformations are described declaratively:
+### 1.2.3 Observable
 
-- **Expressions** describe computations
-- **Effects** describe side effects
-- **Execution** describes how effects are applied
+All state changes are **explicit** and **traceable**:
+
+- Snapshots are immutable and versioned
+- Changes produce new snapshots with incremented versions
+- Diff computation identifies exactly what changed
+
+### 1.2.4 Deterministic
+
+Given the same inputs, Manifesto produces the same outputs:
+
+- Expression evaluation is pure (no side effects)
+- Derived values are computed from a directed acyclic graph (DAG)
+- Effect execution follows predictable ordering
 
 ### 1.2.5 AI-Readable
 
-The specification is designed to be machine-readable and easily parseable by AI agents. Structures are JSON-compatible and avoid ambiguous semantics.
+The domain model is designed for machine comprehension:
+
+- Semantic metadata describes the purpose of each value
+- Preconditions explain when actions are available
+- Effect descriptions document what will happen
 
 ---
 
-## 1.3 Terminology
+## 1.3 Architecture Overview
 
-- **DomainSnapshot**: A structured representation of the application state at a specific point in time.
-- **SemanticPath**: A string-based addressing scheme for referencing values within a snapshot.
-- **Expression**: A declarative structure for computing values based on snapshot data.
-- **Effect**: A declarative structure representing a side effect to be applied.
-- **Execution Engine**: A runtime component that validates and applies effects to produce new snapshots.
+### 1.3.1 Three-Layer Architecture
+
+Manifesto follows a three-layer architecture:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Projection Layer                      │
+│  (UI Projection, Agent Projection, GraphQL Projection)  │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│                      Domain Layer                        │
+│        (ManifestoDomain + DomainRuntime)                │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│                      Bridge Layer                        │
+│     (Adapters for External State: Zustand, Forms)       │
+└─────────────────────────────────────────────────────────┘
+```
+
+1. **Domain Layer**: The core semantic model and runtime
+2. **Projection Layer**: View transformations for different consumers
+3. **Bridge Layer**: Adapters connecting to external state management
+
+### 1.3.2 Data Flow
+
+```
+┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│  Input   │────►│ Snapshot │────►│   DAG    │────►│  Output  │
+│ (Effect) │     │ (State)  │     │(Compute) │     │(Derived) │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘
+      │                                                   │
+      │                                                   │
+      ▼                                                   ▼
+┌──────────┐                                       ┌──────────┐
+│  Async   │                                       │  Events  │
+│ Effects  │                                       │ (UI/Log) │
+└──────────┘                                       └──────────┘
+```
+
+1. Effects modify `data` or `state` namespaces
+2. Changes trigger DAG propagation
+3. Derived values are recomputed in topological order
+4. Async effects may be triggered by conditions
+5. Events are emitted for external consumption
 
 ---
 
-## 1.4 Conformance
+## 1.4 Core Abstractions
 
-A conforming implementation MUST:
+### 1.4.1 DomainSnapshot
 
-1. Represent state using **DomainSnapshot** (Section 2)
-2. Address state using **SemanticPath** (Section 3)
-3. Compute derived values using **Expression** (Section 5)
-4. Apply mutations using **Effect** (Section 4)
-5. Execute effects using the **Execution Model** (Section 7)
+A **DomainSnapshot** represents the complete state of a domain at a specific point in time. It contains four namespaces:
+
+| Namespace | Purpose | Writability |
+|-----------|---------|-------------|
+| `data` | User input and domain data | Writable via `SetValueEffect` |
+| `state` | System and async state | Writable via `SetStateEffect` |
+| `derived` | Computed values | Read-only (auto-computed) |
+| `validity` | Validation results | Read-only (auto-computed) |
+
+See [Section 2 -- Snapshot](./Section%202%20--%20Snapshot.md) for the complete specification.
+
+### 1.4.2 SemanticPath
+
+A **SemanticPath** is a string that uniquely identifies a value within a snapshot. Paths follow dot notation with optional bracket access for arrays:
+
+```
+data.users[0].name
+state.form.errors
+derived.analytics.conversionRate
+```
+
+See [Section 3 -- Semantic Path](./Section%203%20--%20Semantic%20Path.md) for the complete specification.
+
+### 1.4.3 Expression
+
+An **Expression** is a JSON-serializable structure that computes a value. Expressions are pure functions with no side effects.
+
+```typescript
+// Simple literal
+42
+
+// Path access
+['get', 'data.user.age']
+
+// Arithmetic
+['+', ['get', 'data.price'], ['get', 'data.tax']]
+
+// Conditional
+['case',
+  [['<', ['get', 'data.age'], 18], 'minor'],
+  [['<', ['get', 'data.age'], 65], 'adult'],
+  'senior'
+]
+```
+
+See [Section 5 -- Expression](./Section%205%20--%20Expression.md) for the complete specification.
+
+### 1.4.4 Effect
+
+An **Effect** describes a side effect to be executed. Effects are data until executed by the runtime.
+
+Manifesto defines ten effect types:
+
+| Category | Effects |
+|----------|---------|
+| State | `SetValueEffect`, `SetStateEffect` |
+| IO | `ApiCallEffect`, `NavigateEffect` |
+| Temporal | `DelayEffect` |
+| Control | `SequenceEffect`, `ParallelEffect`, `ConditionalEffect`, `CatchEffect` |
+| Event | `EmitEventEffect` |
+
+See [Section 4 -- Effect](./Section%204%20--%20Effect.md) for the complete specification.
+
+### 1.4.5 Dependency Graph (DAG)
+
+The runtime builds a **Directed Acyclic Graph** from path dependencies. When values change, the DAG determines:
+
+1. Which derived values need recomputation
+2. The order of recomputation (topological sort)
+3. Which async effects should trigger
+
+See [Section 7 -- Execution](./Section%207%20--%20Execution.md) for the complete specification.
 
 ---
 
-## 1.5 Document Structure
+## 1.5 Glossary
 
-- **Section 2**: DomainSnapshot - Defines the snapshot structure and namespaces
-- **Section 3**: SemanticPath - Defines addressing semantics
-- **Section 4**: Effect - Defines mutation descriptors
-- **Section 5**: Expression - Defines the declarative computation model
-- **Section 6**: Validation - Defines validation rules for snapshots and effects
-- **Section 7**: Execution - Defines how effects are applied and propagated
+| Term | Definition |
+|------|------------|
+| **Action** | A named operation with preconditions and effects |
+| **Bridge** | An adapter connecting external state to the runtime |
+| **DAG** | Directed Acyclic Graph for dependency tracking |
+| **Domain** | A complete business model definition |
+| **Effect** | A description of a side effect |
+| **Expression** | A declarative computation |
+| **Namespace** | A top-level category within a snapshot |
+| **Path** | See SemanticPath |
+| **Precondition** | A requirement that must be satisfied before an action |
+| **Projection** | A view transformation of the domain |
+| **Propagation** | The process of updating derived values after changes |
+| **Runtime** | The engine that executes the domain model |
+| **Schema** | A Zod type definition for validation |
+| **SemanticMeta** | Metadata describing a path's purpose |
+| **SemanticPath** | A unique address for a value |
+| **Snapshot** | Complete state at a point in time |
+| **Source** | An external input path |
+| **Validation** | The process of checking value correctness |
+
+---
+
+## 1.6 Document Organization
+
+This specification is organized as follows:
+
+- **Section 1 (this section)**: Overview and introduction
+- **Section 2**: DomainSnapshot structure and operations
+- **Section 3**: SemanticPath syntax and resolution
+- **Section 4**: Effect types and semantics
+- **Section 5**: Expression DSL
+- **Section 6**: Validation rules
+- **Section 7**: Execution model and runtime
+
+Appendices provide:
+
+- **Appendix A**: Notation conventions
+- **Appendix B**: Complete grammar summary

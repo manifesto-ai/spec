@@ -2,47 +2,75 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spec.manifesto-ai.dev/schema.json",
   "title": "Manifesto Snapshot",
-  "description": "Machine-readable definition of the Manifesto Snapshot surface.",
+  "description": "Machine-readable definition of the Manifesto DomainSnapshot surface.",
   "type": "object",
-  "required": ["data", "state", "derived", "async", "actions"],
+  "required": ["data", "state", "derived", "validity", "timestamp", "version"],
   "properties": {
-    "version": { "type": "string", "description": "Semantic version of the Snapshot contract." },
-    "data": { "type": "object", "additionalProperties": true },
-    "state": { "type": "object", "additionalProperties": true },
-    "derived": { "type": "object", "additionalProperties": true },
-    "async": {
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/asyncState" }
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic modification counter starting at 0."
     },
-    "actions": {
+    "timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Milliseconds since Unix epoch when the snapshot was produced."
+    },
+    "data": {
       "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/actionDescriptor" }
+      "description": "Domain data (schema-defined).",
+      "additionalProperties": true
+    },
+    "state": {
+      "type": "object",
+      "description": "Ephemeral system/UI state.",
+      "additionalProperties": true
+    },
+    "derived": {
+      "type": "object",
+      "description": "Computed values keyed by SemanticPath.",
+      "additionalProperties": true
+    },
+    "validity": {
+      "type": "object",
+      "description": "Validation results keyed by SemanticPath.",
+      "additionalProperties": { "$ref": "#/$defs/validationResult" }
     }
   },
   "additionalProperties": false,
   "$defs": {
-    "asyncState": {
+    "validationResult": {
       "type": "object",
-      "required": ["status", "data", "error"],
+      "required": ["valid", "issues"],
       "properties": {
-        "status": { "enum": ["idle", "pending", "success", "error"] },
-        "data": {},
-        "error": {}
+        "valid": { "type": "boolean" },
+        "issues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/validationIssue" }
+        }
       },
       "additionalProperties": false
     },
-    "actionDescriptor": {
+    "validationIssue": {
       "type": "object",
-      "required": ["enabled"],
+      "required": ["code", "message", "path", "severity"],
       "properties": {
-        "enabled": { "type": "boolean" },
-        "reason": { "type": "string" },
-        "preconditions": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "path": { "type": "string", "description": "SemanticPath for the issue location." },
+        "severity": { "enum": ["error", "warning", "info", "suggestion"] },
+        "suggestedFix": { "$ref": "#/$defs/suggestedFix" }
       },
-      "additionalProperties": true
+      "additionalProperties": false
+    },
+    "suggestedFix": {
+      "type": "object",
+      "required": ["description", "value"],
+      "properties": {
+        "description": { "type": "string" },
+        "value": {}
+      },
+      "additionalProperties": false
     }
   }
 }
